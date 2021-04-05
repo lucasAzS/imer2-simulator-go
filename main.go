@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"log"
 
+	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/joho/godotenv"
-	"github.com/lucasAzS/psychic-octo-garbanzo/application/route"
+
+	kafka2 "github.com/lucasAzS/psychic-octo-garbanzo/application/kafka"
+	"github.com/lucasAzS/psychic-octo-garbanzo/infra/kafka"
 )
 
 func init() {
@@ -16,13 +19,21 @@ func init() {
 }
 
 func main()  {
-	route := route.Route{
-		ID: "1",
-		ClientID: "1",
 
+	msgChan := make(chan *ckafka.Message)
+	consumer := kafka.NewKafkaConsumer(msgChan)
+	go consumer.Consume()
+	for msg := range msgChan{
+		fmt.Println(string(msg.Value))
+		go kafka2.Produce(msg)
 	}
+	// route := route.Route{
+	// 	ID: "1",
+	// 	ClientID: "1",
 
-	route.LoadPositions()
-	stringjson,_ := route.ExportJsonPositions()
-	fmt.Println(stringjson[0])
+	// }
+
+	// route.LoadPositions()
+	// stringjson,_ := route.ExportJsonPositions()
+	// fmt.Println(stringjson[0])
 }
