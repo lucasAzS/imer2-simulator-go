@@ -7,17 +7,18 @@ import (
 	"time"
 
 	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
-	"github.com/lucasAzS/psychic-octo-garbanzo/application/route"
+	route2 "github.com/lucasAzS/psychic-octo-garbanzo/application/route"
 	"github.com/lucasAzS/psychic-octo-garbanzo/infra/kafka"
 )
 
-//{"client":"1","routeId":"1"}
-//{"client":"2","routeId":"2"}
-//{"client":"3","routeId":"3"}
-func Produce(msg *ckafka.Message){
+// Produce is responsible to publish the positions of each request
+// Example of a json request:
+//{"clientId":"1","routeId":"1"}
+//{"clientId":"2","routeId":"2"}
+//{"clientId":"3","routeId":"3"}
+func Produce(msg *ckafka.Message) {
 	producer := kafka.NewKafkaProducer()
-	route := route.NewRoute()
-
+	route := route2.NewRoute()
 	json.Unmarshal(msg.Value, &route)
 	route.LoadPositions()
 	positions, err := route.ExportJsonPositions()
@@ -28,5 +29,4 @@ func Produce(msg *ckafka.Message){
 		kafka.Publish(p, os.Getenv("KafkaProduceTopic"), producer)
 		time.Sleep(time.Millisecond * 500)
 	}
-
 }
